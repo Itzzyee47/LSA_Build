@@ -1,7 +1,3 @@
-from math import exp
-from token import LESS
-from turtle import left
-from typing import Container
 import flet as ft
 from funtions import *
 
