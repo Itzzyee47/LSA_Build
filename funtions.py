@@ -2,8 +2,6 @@ from datetime import datetime
 from math import floor
 import flet as ft
 
-import pyrebase
-
 import firebase_admin
 from firebase_admin import credentials, firestore, auth, storage
 from google.cloud import storage as gcs_storage

@@ -139,5 +139,3 @@ def main(page : ft.Page):
     page.add(
         onboard
     )
-
-ft.app(target=main)
