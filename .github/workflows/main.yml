@@ -42,7 +42,7 @@ jobs:
 
     - name: Install Python Dependencies
       run: |
-        python -m pip install --upgrade pip
+        python -m pip install --upgrade pip setuptools wheel
         pip install -r requirements.txt
 
     - name: Setup Flutter ${{ env.FLUTTER_VERSION }}
@@ -55,13 +55,6 @@ jobs:
       with:
         distribution: 'temurin' # See https://github.com/marketplace/actions/setup-java-jdk#supported-distributions for available options
         java-version: '21'
-
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v2
-      with:
-        api-levels: 33
-        build-tools: 33.0.2
-        ndk: 25.2.9519653
 
     - name: Flet Build APK
       run: |
