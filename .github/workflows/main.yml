@@ -37,7 +37,7 @@ jobs:
 
     - name: Install Python Dependencies
       run: |
-        python -m pip install --upgrade pip
+        python -m pip install --upgrade pip setuptools wheel
         pip install -r requirements.txt
 
     - name: Setup Flutter ${{ env.FLUTTER_VERSION }}
@@ -50,6 +50,11 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: '21'
+
+    - name: Install Required Packages
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential libffi-dev libssl-dev libffi7 zlib1g-dev liblzma-dev
 
     - name: Flet Build APK
       run: |
