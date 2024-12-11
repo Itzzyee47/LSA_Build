@@ -54,7 +54,7 @@ jobs:
     - name: Install Required Packages
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential libffi-dev libssl-dev libffi7 zlib1g-dev liblzma-dev
+        sudo apt-get install -y build-essential libffi-dev libssl-dev zlib1g-dev liblzma-dev
 
     - name: Flet Build APK
       run: |
