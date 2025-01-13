@@ -8,22 +8,11 @@ import flet as ft
 from threading import Thread
 from start_controls import start_controls,set_auto_signin
 
-from funtions import convert_time, convert_timestamp, convert_timestamp2, create_new_conversation, currentTime, delet_conversation, get_conversations, load_messages, save_chat_message, save_review, send_user_message, titleTime, time_stamp, titleTime2, upload_profile_image, uploadProfileImg
+from funtions import convert_time, convert_timestamp, convert_timestamp2, create_new_conversation, currentTime, delet_conversation, get_conversations, load_messages, save_chat_message, save_review, send_user_message, titleTime, time_stamp, titleTime2, uploadProfileImg
 
 current_page_num = 0
 
-
-
-# Firebase configuration details (replace with your own Firebase config)
-firebase_config = {
-    "apiKey": "AIzaSyC6LbV4AJAxbpBlMXtSBz77NgdgInpcl6c",
-    "authDomain": "lsachatbot.firebaseapp.com",
-    "projectId": "lsachatbot",
-    "storageBucket": "lsachatbot.appspot.com",
-    "messagingSenderId": "817674467330",
-    "appId": "1:817674467330:web:a97a4b92bc7a8258308f1b"
-}
-
+# Firebase configuration details
 config = {
   "apiKey": "AIzaSyC6LbV4AJAxbpBlMXtSBz77NgdgInpcl6c",
   "authDomain": "lsachatbot.firebaseapp.com",
@@ -99,7 +88,6 @@ def getCurrentUserImg():
 def main(page: ft.Page):
     page.title = 'LSA_Chatbot'
     page.window.always_on_top = True
-    page.window.width = 330
     page.window.height = 670    
     page.window.max_height = 670 
     page.theme_mode = ft.ThemeMode.DARK 
@@ -108,7 +96,7 @@ def main(page: ft.Page):
     page.fonts = {
         "billa bong": "assets/fonts/Billabong.ttf"
     }
-    
+    # Onboarders Operators....
     current_page = ft.Container(
         expand=1,
     )
@@ -440,11 +428,17 @@ def main(page: ft.Page):
                     #
                     page.go('/home')
                 except Exception as error:
-                    pass
+                    end_loading(e)
+                    page.snack_bar = ft.SnackBar(ft.Text(f'Error siging in: {error}'), open=True)
+                    page.update()
             else:
-                pass
+                end_loading(e)
+                page.snack_bar = ft.SnackBar(ft.Text(f'Error, no Pass user signed in'), open=True)
+                page.update()
         except Exception as er:
-            pass
+            end_loading(e)
+            page.snack_bar = ft.SnackBar(ft.Text(f'Error siging in: {er}'), open=True)
+            page.update()
     
     def signin(e):
         global User
@@ -764,7 +758,7 @@ def main(page: ft.Page):
                             ft.Row(
                                 [
                                     ft.Text(spans=[
-                                                ft.TextSpan('Already have an account ? '),
+                                                ft.TextSpan('Already have an account ?'),
                                                 ft.TextSpan('Sign-in',
                                                             style=ft.TextStyle(color='blue'),
                                                             on_click= lambda _: page.go('/auth2')
@@ -797,7 +791,14 @@ def main(page: ft.Page):
                             ft.TextField(label='Enter your email',border=ft.InputBorder.UNDERLINE, keyboard_type=ft.KeyboardType.EMAIL, enable_suggestions=True),
                             ft.TextField(label='Enter your password',border=ft.InputBorder.UNDERLINE,password=True,
                                          can_reveal_password=True
-                                         ),
+                                         ), 
+                            ft.Text(spans=[
+                                        ft.TextSpan('Forgot password?',
+                                                    style=ft.TextStyle(color='red'),
+                                                    on_click= lambda e: resetPassword(e)
+                                                ),
+                                    ],size=15
+                                )
                         ]
                     ),padding=ft.padding.only(left=20,right=20),
                              margin=ft.margin.only(bottom=15)
@@ -816,13 +817,6 @@ def main(page: ft.Page):
                                         ft.TextSpan('Sign-up',
                                                     style=ft.TextStyle(color='blue'),
                                                     on_click= lambda _: page.go('/auth')
-                                                ),
-                                    ],size=15
-                                ), 
-                            ft.Text(spans=[
-                                        ft.TextSpan('Forgot password',
-                                                    style=ft.TextStyle(color='red'),
-                                                    on_click= lambda e: resetPassword(e)
                                                 ),
                                     ],size=15
                                 )
@@ -847,27 +841,28 @@ def main(page: ft.Page):
         tooltip=ft.Tooltip('Start a new conversation')
     )
     
-    allConvos =ft.ListView(expand=1,)
+    allConvos =ft.Column(expand=1,)
     
     def loadChats():
         count = 1
         allChats = page.client_storage.get('uConversations')
         allConvos.controls.clear()
+        print('Loading conversatins!!')
         #chatid = None
         #print(allChats[0][1]['time'])
-        #[['SHD45km3Dq19jB9v9YsO', {'user': 'test5@gmail.com', 'time': '1726748273781'}]]
+        #[{"id": "D6cZeZ23zd3wEws6q1mh","date": "2024-12-28T10:27:51.065Z"},{"id": "SjwIJVNBY2z52G61VuEp","date": "2024-12-28T10:07:32.698Z"}  ]
 
         try:
             for i in range(len(allChats)): 
-                chatid = allChats[i][0]
+                chatid = allChats[i]["id"]
                 #print(int(allChats[i][1]['time']))
                 allConvos.controls.append(
                     ft.ListTile(
-                            title=ft.Text(f' {convert_timestamp2(allChats[i][1]['time'])}',
+                            title=ft.Text(f' {convert_timestamp(allChats[i]["date"])}',
                                         width=150, overflow= ft.TextOverflow.FADE, no_wrap=True
                                         ),
-                            subtitle=ft.Text(f'{convert_time(allChats[i][1]['time'])}'),
-                            key=f'{allChats[i][1]['time']}',
+                            subtitle=ft.Text(f'{convert_time(allChats[i]["date"])}'),
+                            key=f'{allChats[i]["date"]}',
                             trailing=ft.PopupMenuButton(  
                                 items=[
                                     ft.PopupMenuItem(icon=ft.icons.DELETE_OUTLINE,text="Delete",on_click= lambda e: deleteChat(e)),
@@ -887,17 +882,19 @@ def main(page: ft.Page):
         
         u = current()
         #print(u['email'])
-        allChats = get_conversations(u['email'])
+        allChats = get_conversations(page,u['email'])
         page.client_storage.set('uConversations', allChats) 
         
         loadChats()
         
     def deleteChat(e):
-        #loading(e)
+        loading(e)
         id = e.control.parent.parent.data
         #print(id)
         try:
             delet_conversation(id)
+            end_loading(e)
+            ft.SnackBar(content=ft.Text('Deleted sucessfully'),open=True)
             refreshPage()
             #end_loading(e)
         except Exception as error:
@@ -915,7 +912,10 @@ def main(page: ft.Page):
     home = ft.Container(
         content=ft.Column(
             [
-               welcomeMessage,
+               ft.Container(
+                   content=welcomeMessage,
+                   padding=ft.padding.only(left=10,right=10),
+                   ),
                 ft.Row(
                     controls=[ 
                             ft.Container(content=ft.Text('Past conversations',)
@@ -932,10 +932,10 @@ def main(page: ft.Page):
                         newConvo
                     ],expand=True 
                 )
-            ],alignment=ft.MainAxisAlignment.CENTER,
+            ],alignment=ft.MainAxisAlignment.CENTER
             
             
-        ),expand=True,padding=ft.padding.only(left=10,right=10),
+        ),expand=True,padding=ft.padding.only(left=15,right=15,top=15),
         image_src='assets/aiAppBg2.jpg',image_fit=ft.ImageFit.COVER,image_opacity=0.3,
     )
     
@@ -953,7 +953,7 @@ def main(page: ft.Page):
                                         #ft.Text(f'{ message['content']}',width=250,size=11,weight=ft.FontWeight.W_600,no_wrap=False),
                                         ft.Row(
                                             [
-                                                ft.Text(f'{convert_time(str(time))}',size=8,color='white'),
+                                                ft.Text(f'{time}',size=8,color='white'),
                                             
                                             ],alignment=ft.MainAxisAlignment.SPACE_BETWEEN
                                         )
@@ -974,7 +974,7 @@ def main(page: ft.Page):
                                         ft.Text(f'{ content}',size=13,weight=ft.FontWeight.W_400,no_wrap=False,width=250),
                                         ft.Row(
                                             [
-                                                ft.Text(f'{convert_time(str(time))}',size=8,color='white'),
+                                                ft.Text(f'{time}',size=8,color='white'),
                                                 
                                             ],alignment=ft.MainAxisAlignment.SPACE_BETWEEN
                                         )
@@ -993,7 +993,7 @@ def main(page: ft.Page):
                 content=ft.Text('Hi there,\n What can i assist you with',
                                 size=25,text_align=ft.TextAlign.CENTER
                                 ,weight=ft.FontWeight.BOLD
-                                ),height=200
+                                ),height=200,margin=ft.margin.symmetric(horizontal=9),width=300
             )
         ],scroll=ft.ScrollMode.HIDDEN,auto_scroll=True,alignment=ft.MainAxisAlignment.CENTER,
         horizontal_alignment=ft.CrossAxisAlignment.CENTER
@@ -1002,7 +1002,7 @@ def main(page: ft.Page):
     def start_new_chat():
         global Useremail
          # Get the current timestamp
-        time = int(datetime.now().timestamp())
+        time = str(currentTime())
         # Set new conversation date
         conversationDate.value = titleTime2(time)
         current_user = Useremail
@@ -1010,7 +1010,7 @@ def main(page: ft.Page):
         loading(e)
         try:
             # Set id for new chat gotten from create conversation function
-            new_chatpage_messagebox.data = create_new_conversation(current_user,str(time))
+            new_chatpage_messagebox.data = create_new_conversation(current_user)
             sleep(1)
             end_loading(e)
             page.go('/newChatPage')
@@ -1020,33 +1020,50 @@ def main(page: ft.Page):
             print(error)
             
     def sendMessage(e,messagebox):
-        convo_id = messagebox.data
-        message = e.control.parent.controls[0].value
+        global Useremail
+        try:
+            convo_id = messagebox.data
+            message = e.control.parent.controls[0].value
+            #print(message)
+            if len(message) >= 2:
+                if messagebox == new_chatpage_messagebox:
+                    messagebox.controls[0].visible = False
+                    
+                timestamp = str(currentTime())
+                time = convert_time(timestamp) 
+                #print(e.control.parent.value)
+                #print(messagebox.controls)
+                e.control.parent.controls[0].value = ''
+                messagebox.controls.append(
+                messageRow(Useremail,message,time)
+                )
+                save_chat_message(message,Useremail,convo_id)
+                page.update()
+                sleep(1)
+                bot_reply= send_user_message(message)
+                print('Getting reply form Zylla ai...')
+                timestamp = str(currentTime())
+                time = convert_time(timestamp)
+                messagebox.controls.append( messageRow('bot',bot_reply,time) )
+                save_chat_message(bot_reply,'bot',convo_id)
+                
+                page.update() 
+            else:
+                alert(e,'Sorry a valid message is required!')
+                page.update
+        except Exception as er:
+            ft.SnackBar(content=ft.Text('The was an error processing your request'),open=True)
+            print(f'{er}')
         #print(message)
-        if len(message) >= 2:
-            if messagebox == new_chatpage_messagebox:
-                messagebox.controls[0].visible = False
-            time = str(floor(datetime.now().timestamp()))
-            #print(e.control.parent.value)
-            #print(messagebox.controls)
-            e.control.parent.controls[0].value = ''
-            messagebox.controls.append(
-            messageRow(Useremail,message,time)
-            )
-            save_chat_message(message,Useremail,convo_id, time)
-            page.update() 
-            sleep(1)
-            bot_reply= send_user_message(message)
-            time = str(floor(datetime.now().timestamp()))
-            save_chat_message(bot_reply,'bot',convo_id, time)
-            messagebox.controls.append( messageRow('bot',bot_reply,time) )
-            
-            page.update()
-        else:
-            alert(e,'Sorry a valid message is required!')
-            page.update
     
-    
+    ##
+    ##################
+    ##
+    messageBoxS = ft.TextField(
+                    hint_text='Ask Zylla...',
+                    expand=10,multiline=True,border=ft.InputBorder.NONE,
+                    content_padding=ft.padding.only(left=8,right=3,bottom=1,top=1)
+                )
     newChatPage = ft.Container(
         content=ft.Column(
             [
@@ -1055,16 +1072,18 @@ def main(page: ft.Page):
                     ,expand=11,padding=ft.padding.only(left=10,right=10),
                     
                 ),
-              ft.Container(
-                  content= ft.TextField(
-                                    multiline=True,
-                                    hint_text='Message..',border=ft.InputBorder.NONE,adaptive=True,
-                                    suffix=ft.IconButton(icon=ft.icons.SEND,icon_color='green',on_click= lambda e: sendMessage(e,new_chatpage_messagebox)),
-                                    fill_color=ft.colors.with_opacity(0.1,ft.colors.GREY_300),
-                                    border_radius=ft.border_radius.all(30)
-                                ),
-                  height=50,padding=ft.padding.only(left=9,right=9)
-              )
+                ft.Container(
+                    content= ft.Row(
+                        [
+                            messageBoxS,
+                            ft.IconButton(
+                                icon=ft.icons.SEND,icon_color='purple',expand=2,
+                                on_click= lambda e: sendMessage(e,new_chatpage_messagebox)
+                            )
+                        ],expand=True,alignment=ft.MainAxisAlignment.CENTER,vertical_alignment=ft.CrossAxisAlignment.CENTER
+                        ),
+                    padding=ft.padding.only(left=9,right=9,top=0,bottom=0),expand=1 ,
+                )
                            
             ]
         ),expand=True,image_src='assets/aiAppBg2.jpg',image_fit=ft.ImageFit.COVER,image_opacity=0.3,
@@ -1097,11 +1116,11 @@ def main(page: ft.Page):
         for message in messages:
             if message['sender'] == 'bot':
                 messageBox.controls.append(
-                    messageRow('bot',message['content'],message['time'])
+                    messageRow('bot',message['content'],convert_time(message['time']))
                 )
             elif message['sender'] != 'bot':
                 messageBox.controls.append(
-                    messageRow(message['sender'],message['content'],message['time'])
+                    messageRow(message['sender'],message['content'],convert_time(message['time']))
                 )
             else:
                 pass
@@ -1110,11 +1129,7 @@ def main(page: ft.Page):
         end_loading(e)
         page.go('/chatPage')
         
-    messageBoxS = ft.TextField(
-                                hint_text='Ask Zylla...',
-                                expand=10,multiline=True,border=ft.InputBorder.NONE,
-                                content_padding=ft.padding.only(left=8,right=3,bottom=1,top=1)
-                            )
+    
     chatPage = ft.Container(
         content=ft.Column(
             [
